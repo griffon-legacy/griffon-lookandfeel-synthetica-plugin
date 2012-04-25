@@ -38,7 +38,7 @@ class LookandfeelSyntheticaGriffonPlugin {
     // URL where documentation can be found
     String documentation = ''
     // URL where source can be found
-    String source = 'https://github.com/griffon/griffon-lookandfeel-syntehtica-plugin'
+    String source = 'https://github.com/griffon/griffon-lookandfeel-synthetica-plugin'
 
     List authors = [
         [
