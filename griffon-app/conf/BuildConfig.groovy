@@ -1,26 +1,36 @@
 griffon.project.dependency.resolution = {
-    // inherit Griffon' default dependencies
-    inherits("global") {
-    }
-    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+    inherits("global")
+    log "warn" 
     repositories {
-        griffonPlugins()
-        griffonHome()
-        griffonCentral()
+        def ant = new AntBuilder()
+        ant.property(environment: 'env')
+        def syntheticaHome = ant.antProject.properties.'env.SYNTHETICA_HOME'
+        if(!syntheticaHome) {
+            println '''
+                Cannot locate Synthetica libraries.
+                Define an environment variable $SYNTHETICA_HOME that points to a directory
+                where Synthetica jar files can be located and try again.
+           '''.stripIndent(16)
+           System.exit(1)
+        }
 
-        // uncomment the below to enable remote dependency resolution
-        // from public Maven repositories
-        //mavenLocal()
-        //mavenCentral()
-        //mavenRepo "http://snapshots.repository.codehaus.org"
-        //mavenRepo "http://repository.codehaus.org"
-        //mavenRepo "http://download.java.net/maven/2/"
-        //mavenRepo "http://repository.jboss.com/maven2/"
+        griffonHome()
+        String basePath = pluginDirPath? "${pluginDirPath}/" : ''
+        flatDir name: "lookAndFeelSyntheticaLibDir", dirs: ["${syntheticaHome}/lookandfeel"]
     }
     dependencies {
-        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-
-        // runtime 'mysql:mysql-connector-java:5.1.5'
+        def ant = new AntBuilder()
+        ant.property(environment: 'env')
+        def syntheticaHome = ant.antProject.properties.'env.SYNTHETICA_HOME'
+        File syntheticaLafDir = new File(syntheticaHome, 'lookandfeel')
+        def nameVersionPattern = ~/^([\w][\w\.-]*)-([0-9][\w\.0-9\-]*)\.jar$/
+        syntheticaLafDir.eachFileMatch(~/.*\.jar/) { jarFile ->
+            def matcher = nameVersionPattern.matcher(jarFile.name)
+            matcher.find()
+        
+              build("de.javasoft.synthetica:${matcher.group(1)}:${matcher.group(2)}")
+            compile("de.javasoft.synthetica:${matcher.group(1)}:${matcher.group(2)}")
+        }
     }
 }
 
@@ -32,6 +42,16 @@ griffon {
     }
 }
 
-griffon.jars.destDir='target/addon'
+log4j = {
+    // Example of changing the log pattern for the default console
+    // appender:
+    appenders {
+        console name: 'stdout', layout: pattern(conversionPattern: '%d [%t] %-5p %c - %m%n')
+    }
 
-//griffon.jars.jarName='LookandfeelSyntheticaGriffonAddon.jar'
+    error 'org.codehaus.griffon',
+          'org.springframework',
+          'org.apache.karaf',
+          'groovyx.net'
+    warn  'griffon'
+}
