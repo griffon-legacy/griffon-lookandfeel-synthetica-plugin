@@ -27,7 +27,7 @@ griffon.project.dependency.resolution = {
         syntheticaLafDir.eachFileMatch(~/.*\.jar/) { jarFile ->
             def matcher = nameVersionPattern.matcher(jarFile.name)
             matcher.find()
-        
+
               build("de.javasoft.synthetica:${matcher.group(1)}:${matcher.group(2)}")
             compile("de.javasoft.synthetica:${matcher.group(1)}:${matcher.group(2)}")
         }
